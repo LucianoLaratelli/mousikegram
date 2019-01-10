@@ -1,3 +1,4 @@
+#!/usr/local/bin/python3.7
 """
 Mousikegram -- A Telegram bot that translates links between music streaming services.
 Copyright (C) 2019 Luciano E. Laratelli
@@ -16,12 +17,29 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+# python libraries
 import logging
 import re
 
+# /python libraries
+
+# telegram bot library
 from telegram.ext import Updater
 from telegram.ext import CommandHandler
 from telegram.ext import MessageHandler, Filters
+
+# /telegram bot library
+
+# spotipy
+import spotipy
+import spotipy.util as util
+
+# /spotipy
+
+# API secrets and other garbage
+from config import SP_CLIENT_ID, SP_CLIENT_SECRET, TELEGRAM_SECRET
+
+# /API secrets and other garbage
 
 url_regex = re.compile(
     r"^(?:http|ftp)s?://"  # http:// or https://
@@ -33,22 +51,29 @@ url_regex = re.compile(
     re.IGNORECASE,
 )
 
-TOKEN = None
+token = util.oauth2.SpotifyClientCredentials(
+    client_id=SP_CLIENT_ID, client_secret=SP_CLIENT_SECRET
+)
 
-with open("secret.txt", "r") as f:
-    TOKEN = f.read().strip()
+cache_token = token.get_access_token()
+spotify = spotipy.Spotify(cache_token)
 
 
 def read(bot, update):
     potential_link = update.message.text
     is_link = re.match(url_regex, potential_link)
     if is_link is not None:
+        track_info = spotify.track(potential_link)
+        track_name = track_info["name"]
+        track_artist = track_info["artists"][0]["name"]
+        track_album = track_info["album"]["name"]
+        output_string = f"Your link is the song {track_name} from the album {track_album} by the artist {track_artist}"
         bot.send_message(
-            chat_id=update.message.chat_id, text=f"{potential_link} is a valid URL!"
+            chat_id=update.message.chat_id, text=output_string
         )
 
 
-updater = Updater(token=TOKEN)
+updater = Updater(token=TELEGRAM_SECRET)
 dispatcher = updater.dispatcher
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO

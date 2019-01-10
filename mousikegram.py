@@ -20,6 +20,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # python libraries
 import logging
 import re
+import urllib.request
+from bs4 import BeautifulSoup
 
 # /python libraries
 
@@ -67,10 +69,19 @@ def read(bot, update):
         track_name = track_info["name"]
         track_artist = track_info["artists"][0]["name"]
         track_album = track_info["album"]["name"]
-        output_string = f"Your link is the song {track_name} from the album {track_album} by the artist {track_artist}"
-        bot.send_message(
-            chat_id=update.message.chat_id, text=output_string
-        )
+        output_string = f"Your link is the song {track_name} from the album {track_album} by the artist {track_artist}\n"
+        textToSearch = f"{track_name} {track_artist}"
+        if(track_name == track_artist):
+            textToSearch += "SINGLE"
+        query = urllib.parse.quote(textToSearch)
+        url = "https://www.youtube.com/results?search_query=" + query
+        response = urllib.request.urlopen(url)
+        html = response.read()
+        soup = BeautifulSoup(html, "html.parser")
+        for vid in soup.findAll(attrs={"class": "yt-uix-tile-link"}):
+            output_string += f"Youtube Link: https://www.youtube.com{vid['href']}\n"
+            break
+        bot.send_message(chat_id=update.message.chat_id, text=output_string)
 
 
 updater = Updater(token=TELEGRAM_SECRET)

@@ -8,6 +8,4 @@ At the moment, mousikegram only does Spotify -> Youtube.
 Many thanks to the excellent folks over at [python-telegram-bot](https://github.com/python-telegram-bot/python-telegram-bot) and 
 [spotipy.](https://github.com/plamere/spotipy).
 
-This project is intended for python3.6+ (I love `fstrings`.)
-
-Formatted ruthlessly by [black.](https://github.com/ambv/black)
+This project is intended for python3.6+.
